@@ -18,8 +18,6 @@ batch_size = 10
 learning_rate = 0.0002
 training_epochs = 15
 
-
-
 cfgs = {
 "A": [64, "M", 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
 "B": [64, 64, "M", 128, 128, "M", 256, 256, "M", 512, 512, "M", 512, 512, "M"],
@@ -38,9 +36,9 @@ with open("./imagenet1000_clsidx_to_labels.json", "r") as read_file:
 idx2label = [class_idx[str(k)] for k in range(len(class_idx))]
 cls2label = {class_idx[str(k)][0]:class_idx[str(k)][1] for k in range(len(class_idx))}
 
-train_path = '../dataset/imagenet/train'
-train_imgs = ImageFolder(train_path, transform=transform)
-train_loader = torch.utils.data.DataLoader(train_imgs,  batch_size = batch_size,shuffle = True)
+train_path = '../imagenet-mini/train'
+train_imgs_meta = ImageFolder(train_path, transform=transform)
+train_loader = torch.utils.data.DataLoader(train_imgs_meta, batch_size=batch_size, shuffle=True)
 
 class VGG(torch.nn.Module):
     def __init__(self, num_classes= 1000, init_weights = True):
@@ -102,7 +100,7 @@ class VGG(torch.nn.Module):
         in_channels = 3
         for v in cfg:
             if v == 'M':
-                layes += [nn.MaxPool2d(kernel_size = 2, stride=2)]
+                layers += [nn.MaxPool2d(kernel_size = 2, stride=2)]
             else:
                 conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
                 if batch_norm:
@@ -119,10 +117,6 @@ vgg_net = VGG().to(device)
 param = list(vgg_net.parameters())
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(vgg_net.parameters(), lr = 0.0001)
-
-
-# In[35]:
-
 
 for epoch in range(training_epochs):
     running_loss = 0.0
